@@ -16,7 +16,7 @@ Located under ```SimulatorEngine/market_simulation```, it builds derived objects
 
 After setting up python environment and install packages from ```requirements.txt```. Just run ```python main.py``` under ```SimulatorEngine```.
 
-Metrics on the simulation would be saved under ```SimulatorEngine/analytics``` with each simulation having its own folder. However, without changing the config and random seed, each run would yield exact same results.
+Metrics on the simulation would be saved under ```SimulatorEngine/metric_outputs``` with each simulation having its own folder. However, without changing the config and random seed, each run would yield exact same results.
 
 ### How to customize the simulation?
 
