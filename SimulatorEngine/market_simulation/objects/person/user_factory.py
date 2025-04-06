@@ -57,7 +57,7 @@ class UserFactory:
             weights=list(per_country_probability.values()),
             k=1
         )[0]
-        current_time = Orchestrator.get_current_time()
+        current_time = Orchestrator.get_global_time()
         # generate a birth day that is in the past
         # consider the possibility between year - age, and year - age - 1
         # based on selected birth month
