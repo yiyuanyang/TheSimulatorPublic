@@ -1,0 +1,26 @@
+simulation_config:
+  experiment_name: "test_one"
+  # With same seed and same config, simulation will
+  # yield exact same results, this should facilitate
+  # counterfactual analysis. Or if seed is remained
+  # the same and object / agent's initialization
+  # config is the same, the initial setup group
+  # would still be the same.
+  random_seed: 42
+  # How much time does every simulation tick
+  # represent, this will be used to scale
+  # the simulation time for the rest of other objects
+  # in the simulation
+  tick_interval_seconds: 60
+  start_date: "2023-01-01"
+  end_date: "2023-01-03"
+analytics_config:
+  # this would be saved under a folder with experiment name
+  # and unique uuid
+  save_path: "./metric_outputs"
+debug_config:
+  print_all_behaviors_for_debug: false
+  output_warning_level: "LOG"
+  # In hours, printing to console the progression
+  # of time
+  time_indicator_print_interval: 1

@@ -1,0 +1,173 @@
+# This file contains the user, environment, advertiser configurations
+# for the simulation
+environment_config:
+  enabled_surfaces:
+    - "content_feed"
+    - "video_feed"
+    - "commerce"
+  per_surface_ad_load:
+    # Ad load means number of ad impressions per
+    # seconds
+    content_feed: 0.15
+    video_feed: 0.1
+    commerce: 0.3
+  per_surface_fetch_cnt:
+    content_feed: 30
+    video_feed: 10
+    commerce: 30
+  enabled_countries:
+    - "US"
+    - "CA"
+  # in minutes, how long till next round of all
+  # ads detection
+  ads_scanning_period: 60
+user_config:
+  min_age: 18
+  max_age: 65
+  user_count: 1000
+  per_country_user_proportion:
+    US: 0.6
+    CA: 0.4
+  # How much time per simulation step, number of seconds
+  user_simulation_interval: 60
+  # number of days for user to remember purchase, view
+  # and conversion history
+  ad_view_history_days: 30
+  ad_purchase_history_days: 30
+  income_config:
+    # User income is modeled via log normal distribution
+    # with mu = 8.5 and sigma = 0.5, we get avg around 5k
+    # max around 50k and min around 400 per month
+    income_mu: 8.5
+    income_sigma: 0
+  intent_config:
+    intent_mean: 0.5
+    intent_std: 0
+    per_purchase_intent_decay: 0.95
+    # this means there would be no 
+    # probability penalty from income considerations
+    # if user's income is X times the product price
+    no_decay_income_price_ratio: 100
+    # If female's intent is 1, what is male's probability
+    # of converting on the same ad
+    gender_factor: 0.9
+    # peak purchasing power age, this means conversion
+    # probability reduces towards both ends
+    peak_age: 35
+    # Baseline probability for different kind of ad goal
+    event_probability_baseline:
+      conversions: 0.03
+    # Awareness ads improves user intent on same advertiser
+    awareness_improvement: 1.05
+    # Conversion ads causes ad fatigue
+    ad_fatigue: 0.95
+  browsing_config:
+    # number of times user browse the app
+    # in a day is modeled via normal distribution
+    daily_active_cnt_mean: 20
+    daily_active_cnt_std: 10
+    # number of seconds per user visit
+    session_length_mean: 30
+    session_length_std: 10
+advertiser_config:
+  advertiser_count: 10
+  per_country_advertiser_proportion:
+    US: 0.6
+    CA: 0.4
+  budget_config:
+    # in minutes, how often do advertisers check
+    # and create new ads
+    ad_creation_interval: 1 
+    # Adv Budget is modeled via log normal distribution
+    # budget = lognormal(mu, sigma)
+    # with mu = 5 and sigma = 0.85
+    # average budget is around 212 and max around 8k, min around 2
+    budget_mu: 5
+    budget_sigma: 0.85
+    # Percentile grouping for large, medium and small advertisers
+    large_percentile: 0.8
+    medium_percentile: 0.5
+    # Period in adjusting ad budget, in days
+    large_adv_adjust_period: 90
+    medium_adv_adjust_period: 30
+    small_adv_adjust_period: 7
+    # X% performance improvement translates
+    # to X * incremental% budget increase
+    # in the next budget adjustment cycle
+    performance_incremental: 0.5
+  intent_config:
+    percent_adv_enabling_awareness_ads: 0.3
+    allowed_ad_goal:
+      - 'impressions'
+      - 'conversions'
+    allowed_formats:
+      - "single_image"
+      - "carousel"
+      - "single_video"
+    allowed_bidding_strategies:
+      - "max_outcome_without_cost_cap"
+    # product price is modeled via log normal distribution
+    # with mu = 3.8 and sigma = 0.65 we get average 55
+    # max around 1k and min around 2
+    price_mu: 3.8
+    price_sigma: 0.65
+    # profit margin
+    profit_margin_mean: 0.3
+    profit_margin_std: 0.05
+    # ROI is modeled via normal distribution
+    target_roi_mean: 0.4
+    target_roi_std: 0.05
+    # Age threshold, min age cannot be higher
+    # than this value and max age cannot be lower
+    # than this value
+    age_threshold: 35
+delivery_config:
+  auction_config:
+    # Choose:
+    # 1. generalized_second_price (GSP)
+    # 2. generalized_first_price (GFP)
+    auction_type: "generalized_second_price"
+  pacing_config:
+    # Number of times it gets called
+    # before applying another adjustment
+    adjustment_interval: 1
+    # arbitrarily large max bid, in USD
+    max_bid: 1000
+    # initial tiny pacing multiplier
+    starting_pacing_multiplier: 0.00001
+    # Alpha determines how fast pacing
+    # multiplier increases or decreases
+    alpha: 0.5
+    # Used to ensure a minimum pacing
+    # multiplier and to avoid not able
+    # to pace at all
+    epsilon: 0.000001
+  model_config:
+    # Simulates how model works
+    # noise factor simulates how much noise
+    # gets introduced into true probability
+    # prediction
+    model_noise_factor: 0.1
+analytics_config:
+  # in minutes
+  advertiser:
+    computation_interval: 2880
+    aggregation_window: 2880
+    calculations_per_save: 1
+    calculation_rate: 1  # 100% calculated
+  surface:
+    computation_interval: 360
+    aggregation_window: 1440
+    calculations_per_save: 1
+    calculation_rate: 1  # 100% calculated
+  ad:
+    computation_interval: 360
+    aggregation_window: 720
+    calculations_per_save: 1
+    calculation_rate: 0.5 # 50% calculated
+  user:
+    computation_interval: 1440
+    aggregation_window: 1440
+    calculations_per_save: 1
+    calculation_rate: 0.05 # 10% calculated
+  
