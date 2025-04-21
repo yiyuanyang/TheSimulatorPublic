@@ -75,7 +75,8 @@ class UserAdViewHistoryState(ActiveState):
         awareness_improvement = intent_config["awareness_improvement"]
         ad_fatigue = intent_config["ad_fatigue"]
         awareness_cnt = self.get_event_cnt_on_advertiser(
-            AdEventType.IMPRESSIONS, ad.owner
+            AdEventType.IMPRESSIONS,
+            ad.owner
         )
         conversions_cnt = self.get_event_cnt_on_ad(
             AdEventType.CONVERSIONS, ad

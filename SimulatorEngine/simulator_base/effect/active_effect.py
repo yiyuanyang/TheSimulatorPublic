@@ -18,7 +18,7 @@
 from .effect_base import EffectBase
 from ..orchestrator.orchestrator import Orchestrator
 from abc import abstractmethod
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import final
 
 
@@ -75,20 +75,3 @@ class ActiveEffect(EffectBase):
 
     def __str__(self):
         return f"{self.object_subtype}_{super().__str__()}"
-
-    @final
-    def to_dict(self) -> dict:
-        base_dict = super().to_dict()
-        base_dict.update({
-            "target_end_time": self._target_end_time.isoformat(),
-            "duration": self._duration.total_seconds(),
-        })
-        return base_dict
-
-    @final
-    def from_dict(self, data: dict):
-        super().from_dict(data)
-        self._target_end_time = datetime.fromisoformat(
-            data["target_end_time"]
-        ) if data["target_end_time"] is not None else None
-        self._duration = timedelta(seconds=data["duration"])

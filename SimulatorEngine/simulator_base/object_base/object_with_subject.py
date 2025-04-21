@@ -6,18 +6,19 @@
     ==========================================================
 """
 
-from simulator_base.object_base.object_base import ObjectBase
+from simulator_base.object_base.simulation_object import SimulationObject
+from simulator_base.orchestrator.orchestrator import get_orchestrator
 from typing import final
 
 
-class ObjectWithSubject(ObjectBase):
+class ObjectWithSubject(SimulationObject):
     def __init__(
         self,
         object_type: str,
         object_subtype: str,
     ):
         super().__init__(object_type, object_subtype)
-        self._subject = None
+        self._subject: SimulationObject = None
 
     # ============== User Accessible Public Properties ===============
 
@@ -48,19 +49,26 @@ class ObjectWithSubject(ObjectBase):
         """
         self.subject.remove_object(self)
 
-    def to_dict(self) -> dict:
+    def rehydrate(self):
         """
-            Convert the object to a dictionary
+            Once reloaded, add itself back to orchestrator
+            given its saves where handled by its subject
         """
-        dict_base = super().to_dict()
-        obj_data = {
-            'subject_id': self.subject.id,
-        }
-        dict_base.update(obj_data)
-        return dict_base
+        orchestrator = get_orchestrator()
+        orchestrator.add_object(self)
 
-    def from_dict(self, object_data: dict):
+    # ================= System Function Overrides ==================
+
+    def __getstate__(self):
         """
-            Convert the object from a dictionary
+            turn subject into id
         """
-        super().from_dict(object_data)
+        state = self.__dict__.copy()
+        state["_subject"] = None
+        return state
+
+    def __setstate__(self, state):
+        """
+            set subject from id
+        """
+        self.__dict__.update(state)

@@ -38,7 +38,8 @@ def create_ad(
     duration: timedelta
 ):
     ad = Ad()
-    ad.owner = advertiser
+    ad.associate('owner', advertiser)
+    advertiser.append_ad(ad)
     ad.add_object(AdOutcomeState(ad_outcome))
     ad.add_object(AdBudgetState(
         duration,

@@ -29,14 +29,3 @@ class SurfaceDownEffect(PassiveEffect):
     @is_surface_down.setter
     def is_surface_down(self, value: bool):
         self._is_surface_down = value
-
-    def to_dict(self):
-        base_dict = super().to_dict()
-        base_dict.update({
-            'is_surface_down': self._is_surface_down,
-        })
-        return base_dict
-
-    def from_dict(self, data: dict):
-        super().from_dict(data)
-        self._is_surface_down = data.get('is_surface_down')

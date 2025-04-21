@@ -35,15 +35,3 @@ class IncomeEffect(ActiveEffect):
                 'Error when applying income effect: '
                 'DisposableIncomeState not found for agent'
             )
-
-    def to_dict(self) -> dict:
-        dict_base = super().to_dict()
-        obj_data = {
-            'income': self._income,
-        }
-        dict_base.update(obj_data)
-        return dict_base
-
-    def from_dict(self, object_data: dict):
-        super().from_dict(object_data)
-        self._income = object_data['income']

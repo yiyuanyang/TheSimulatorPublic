@@ -18,4 +18,4 @@ class PassiveState(State):
 
     @final
     def simulate(self):
-        super().simulate()
+        pass

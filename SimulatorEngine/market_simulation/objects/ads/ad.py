@@ -35,16 +35,15 @@ from datetime import datetime, timedelta
 class Ad(Agent):
     def __init__(self):
         super().__init__("Ad")
-        self._owner: Agent = None
 
     @property
     def owner(self):
-        return self._owner
+        return self.get_associated_object("owner")
 
     @owner.setter
     def owner(self, value: Agent):
-        value._active_ads.append(self)
-        self._owner = value
+        value.associate("active_ads", self)
+        self.associate("owner", value)
 
     @property
     def ad_goal(self) -> str:
@@ -220,9 +219,9 @@ class Ad(Agent):
 
     def validate_object(self):
         super().validate_object()
-        if self._owner is None:
+        if self.owner is None:
             raise Exception("Ad must have an advertiser as owner")
-        if self._owner.object_subtype != 'Advertiser':
+        if self.owner.object_subtype != 'Advertiser':
             raise Exception("Ad owner must be an advertiser")
 
     def matches_target(self, filter: TargetingFilter):

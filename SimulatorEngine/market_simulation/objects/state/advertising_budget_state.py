@@ -36,4 +36,4 @@ class AdvertisingBudgetState(PassiveState):
         return 1 - self.utilized_budget / self._daily_budget
 
     def can_spend(self, amount: float) -> bool:
-        return self.remaining_percentage * self._daily_budget >= amount
+        return self.daily_budget - self.utilized_budget >= amount

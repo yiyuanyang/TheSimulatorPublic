@@ -10,6 +10,7 @@ import random
 import numpy as np
 from typing import Optional
 import os
+import pickle
 
 
 class GlobalConfig:
@@ -50,37 +51,125 @@ class GlobalConfig:
         )
         return complete_save_path
 
+    def get_command_path(self):
+        save_path = self._command_config["command_path"]
+        return save_path
+
+    def get_snapshot_path(self, tick_cnt: int):
+        save_path = self._snapshot_config["snapshot_path"]
+        exp_path = self.get_exp_output_path()
+        snapshot_path = os.path.join(
+            exp_path,
+            save_path,
+            f"snapshot_{tick_cnt}"
+        )
+        os.makedirs(snapshot_path, exist_ok=True)
+        return snapshot_path
+
+    def save_global_config_snapshot(self, tick_cnt: int):
+        snapshot_path = self.get_snapshot_path(tick_cnt)
+        global_config_path = os.path.join(
+            snapshot_path,
+            'config_saves'
+        )
+        os.makedirs(global_config_path, exist_ok=True)
+        self.save_random_state(global_config_path)
+        # save the global config
+        global_config_pickle_path = os.path.join(
+            global_config_path,
+            'global_config.pkl'
+        )
+        with open(global_config_pickle_path, 'wb') as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def load_global_config_snapshot(cls, load_dir: str):
+        global_config_path = os.path.join(
+            load_dir,
+            'config_saves'
+        )
+        global_config_pickle_path = os.path.join(
+            global_config_path,
+            'global_config.pkl'
+        )
+        # if the file does not exist, raise exception
+        if not os.path.exists(global_config_pickle_path):
+            raise FileNotFoundError(
+                (
+                    f"Global config snapshot not found at "
+                    f"{global_config_pickle_path}"
+                )
+            )
+        with open(global_config_pickle_path, 'rb') as f:
+            cls._instance = pickle.load(f)
+        cls._instance.load_random_state(global_config_path)
+
+    def save_random_state(self, path):
+        # This is to ensure that random numbers are continuously
+        # generated from the same sequence
+        random_state = random.getstate()
+        np_random_state = np.random.get_state()
+        random_state_path = os.path.join(path, 'random_state.pkl')
+        np_random_state_path = os.path.join(path, 'np_random_state.pkl')
+        with open(random_state_path, 'wb') as f:
+            pickle.dump(random_state, f)
+        with open(np_random_state_path, 'wb') as f:
+            pickle.dump(np_random_state, f)
+
+    def load_random_state(self, path):
+        # This is to ensure that random numbers are continuously
+        # generated from the same sequence
+        random_state_path = os.path.join(path, 'random_state.pkl')
+        np_random_state_path = os.path.join(path, 'np_random_state.pkl')
+        with open(random_state_path, 'rb') as f:
+            random_state = pickle.load(f)
+        with open(np_random_state_path, 'rb') as f:
+            np_random_state = pickle.load(f)
+        random.setstate(random_state)
+        np.random.set_state(np_random_state)
+
     def setup(self, config_path: str = 'config/global_config.yaml'):
         with open(config_path, 'r') as file:
             config = yaml.safe_load(file)
             self._simulation_config = config['simulation_config']
-            self._analytics_config = config['analytics_config']
-            self._debug_config = config['debug_config']
-            random_seed = self._simulation_config.get('random_seed', 1)
-            random.seed(random_seed)
-            np.random.seed(random_seed)
-            # copy the global config into the target metrics folder
-            exp_output = self.get_exp_output_path()
-            yaml_copy_path = os.path.join(
-                exp_output,
-                'global_config.yaml'
-            )
-            os.makedirs(exp_output, exist_ok=True)
-            with open(yaml_copy_path, 'w') as yaml_copy_file:
-                yaml.dump(
-                    config,
-                    yaml_copy_file,
-                    sort_keys=False,
-                    default_flow_style=False
+            if not config['simulation_config']['load_from_snapshot']:
+                self._analytics_config = config['analytics_config']
+                self._command_config = config['command_config']
+                self._snapshot_config = config['snapshot_config']
+                self._debug_config = config['debug_config']
+                random_seed = self._simulation_config.get('random_seed', 1)
+                random.seed(random_seed)
+                np.random.seed(random_seed)
+                # copy the global config into the target metrics folder
+                exp_output = self.get_exp_output_path()
+                yaml_copy_path = os.path.join(
+                    exp_output,
+                    'global_config.yaml'
                 )
+                os.makedirs(exp_output, exist_ok=True)
+                with open(yaml_copy_path, 'w') as yaml_copy_file:
+                    yaml.dump(
+                        config,
+                        yaml_copy_file,
+                        sort_keys=False,
+                        default_flow_style=False
+                    )
 
     @property
     def simulation_config(self) -> dict:
         return self._simulation_config
 
     @property
+    def command_config(self) -> dict:
+        return self._command_config
+
+    @property
+    def snapshot_config(self) -> dict:
+        return self._snapshot_config
+
+    @property
     def end_time(self) -> Optional[datetime]:
-        end_time_str = self._simulation_config.get('end_time')
+        end_time_str = self._simulation_config.get('end_date')
         if end_time_str:
             return datetime.fromisoformat(end_time_str)
         return None

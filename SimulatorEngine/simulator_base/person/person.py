@@ -17,15 +17,10 @@ class Person(Agent):
         self,
         person_type: Optional[str] = None,
     ):
-        super().__init__("Person")
-        self._person_type = person_type
+        super().__init__(person_type)
 
     def required_objects(self) -> List[str]:
         return ['PersonalInfoState']
-
-    @property
-    def person_type(self) -> str:
-        return self._person_type
 
     @property
     def name(self) -> str:

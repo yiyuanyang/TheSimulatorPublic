@@ -30,13 +30,3 @@ class OverCalibrationEffect(PassiveEffect):
     @over_calibration.setter
     def over_calibration(self, value: float):
         self._over_calibration = value
-
-    def to_dict(self):
-        base_dict = super().to_dict()
-        base_dict.update({
-            'over_calibration': self._over_calibration,
-        })
-
-    def from_dict(self, data: dict):
-        super().from_dict(data)
-        self._over_calibration = data.get('over_calibration')

@@ -9,14 +9,14 @@
     ============================================
 """
 
-from ..object_base.object_base import ObjectBase
+from ..object_base.simulation_object import SimulationObject
 from ..orchestrator.orchestrator import Orchestrator
 from datetime import datetime
 from abc import abstractmethod
 from typing import final
 
 
-class Event(ObjectBase):
+class Event(SimulationObject):
     def __init__(
         self,
         event_type: str,
@@ -62,6 +62,12 @@ class Event(ObjectBase):
 
     # =================== System Accessible Public Methods ==================
 
+    def rehydrate(self):
+        """
+            events generally do not need rehydration
+        """
+        pass
+
     @final
     def simulate(self):
         """
@@ -72,14 +78,3 @@ class Event(ObjectBase):
         if self.can_start():
             self.apply()
             self.destroy()
-
-    def to_dict(self) -> dict:
-        base_dict = super().to_dict()
-        base_dict.update({
-            "start_time": self._start_time.isoformat(),
-        })
-        return base_dict
-
-    def from_dict(self, data: dict):
-        super().from_dict(data)
-        self._start_time = datetime.fromisoformat(data.get("start_time"))

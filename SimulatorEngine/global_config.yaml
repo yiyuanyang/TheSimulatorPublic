@@ -1,11 +1,13 @@
 simulation_config:
-  experiment_name: "test_one"
+  load_from_snapshot: False
+  snapshot_directory: "./simulation_outputs/test_one_d8df9400-03b2-4ab7-9735-f5964e349e31/simulation_snapshots/snapshot_2881"
   # With same seed and same config, simulation will
   # yield exact same results, this should facilitate
   # counterfactual analysis. Or if seed is remained
   # the same and object / agent's initialization
   # config is the same, the initial setup group
   # would still be the same.
+  experiment_name: "test_one"
   random_seed: 42
   # How much time does every simulation tick
   # represent, this will be used to scale
@@ -13,11 +15,27 @@ simulation_config:
   # in the simulation
   tick_interval_seconds: 60
   start_date: "2023-01-01"
-  end_date: "2023-01-03"
+  end_date: null
+  automatic_start: True
+  automatic_tick: True
+  # command.json is how the external client / systems
+  # interact with the endlessly running simulation
+command_config:
+  command_path: "./command"
+  # in number of seconds, how often does simulation
+  # check for new external commands
+  command_read_interval: 60
+snapshot_config:
+  should_save: True
+  # In number of seconds, how often does simulation
+  # save a snapshot of the current state
+  should_save_at_start: True
+  snapshot_save_interval: 172800 # 2 days
+  snapshot_path: "./simulation_snapshots"
 analytics_config:
   # this would be saved under a folder with experiment name
   # and unique uuid
-  save_path: "./metric_outputs"
+  save_path: "./simulation_outputs"
 debug_config:
   print_all_behaviors_for_debug: false
   output_warning_level: "LOG"

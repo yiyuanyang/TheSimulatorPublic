@@ -161,11 +161,10 @@ class AdvertiserIntentState(PassiveState):
         adv_budget_state = self.subject.get_state(
             "AdvertisingBudgetState"
         )
-        min(
+        return min(
             proposed_budget_percent,
             adv_budget_state.remaining_percentage
-        )
-        return adv_budget_state.daily_budget * proposed_budget_percent
+        ) * adv_budget_state.daily_budget
 
     def can_create_ad(self):
         remaining_budget_ratio = self.subject.get_state(
@@ -173,5 +172,6 @@ class AdvertiserIntentState(PassiveState):
         ).remaining_percentage
         return (
             self._current_ad_cnt < self._max_ads_per_day
+            and remaining_budget_ratio > 0
             and remaining_budget_ratio >= self._min_budget_percent_per_ad
         )

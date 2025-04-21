@@ -11,7 +11,6 @@
     ============================================
 """
 
-from simulator_base.orchestrator.orchestrator import get_orchestrator
 from simulator_base.object_base.object_with_subject import ObjectWithSubject
 from abc import abstractmethod
 from typing import final, Optional
@@ -23,11 +22,13 @@ class Action(ObjectWithSubject):
         self,
         action_type: str,
         evaluation_interval: timedelta,
+        simulate_on_first_tick: bool = False,
     ):
         super().__init__("Action", object_subtype=action_type)
         self._should_act = False
         self._last_action_object_lifetime: Optional[timedelta] = None
         self.simulation_interval = evaluation_interval
+        self._simulate_on_first_tick = simulate_on_first_tick
 
     # ============= Abstract Methods ================
 
@@ -68,38 +69,6 @@ class Action(ObjectWithSubject):
             self.act()
         self._should_act = False
         super().simulate()
-
-    @final
-    def to_dict(self) -> dict:
-        """
-            Serialize the action
-        """
-        dict_base = super().to_dict()
-        action_data = {
-            'should_act': self._should_act,
-            'last_action_object_lifetime': self._last_action_object_lifetime,
-            'subject': self.subject.id,
-        }
-        dict_base.update(action_data)
-        return dict_base
-
-    @final
-    def from_dict(self, object_data: dict):
-        """
-            Deserialize the action
-        """
-        super().from_dict(object_data)
-        self._should_act = object_data.get('should_act', False)
-        self._last_action_object_lifetime = object_data.get(
-            'last_action_object_lifetime', None
-        )
-        actor_id = object_data.get('actor', None)
-        if actor_id is not None:
-            raise Exception(
-                f"Actor id missing in actor deserialization {self.id}"
-            )
-        actor = get_orchestrator().get_agent(actor_id)
-        actor.add_object(self)
 
     # ============= Private Helper Methods =============
     @final

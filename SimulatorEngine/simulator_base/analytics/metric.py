@@ -12,8 +12,11 @@
 """
 
 from simulator_base.config.global_config import get_config
-from simulator_base.object_base.object_base import ObjectBase
-from simulator_base.orchestrator.orchestrator import Orchestrator
+from simulator_base.object_base.simulation_object import SimulationObject
+from simulator_base.orchestrator.orchestrator import (
+    Orchestrator,
+    get_orchestrator,
+)
 from abc import abstractmethod
 from typing import final, List
 from datetime import timedelta
@@ -22,12 +25,15 @@ import os
 import random
 
 
-class Metric(ObjectBase):
+class Metric(SimulationObject):
     def __init__(self, metric_type: str, computation_config: dict):
         super().__init__("Metric", metric_type)
         self._setup_metric(computation_config)
         self._simulate_on_first_tick = True
-        self._subject = None
+        self._subject: SimulationObject = None
+        # only used for rehydration
+        self._subject_id = None
+        self._subject_type = None
 
     @abstractmethod
     def calculate(self) -> list:
@@ -49,17 +55,15 @@ class Metric(ObjectBase):
 
     # ================= User Accessible Public Methods ==================
 
+    def before_destroy(self):
+        self._subject = None
+
     @final
-    def attach(self, obj: ObjectBase):
+    def attach(self, obj: SimulationObject):
         """
             Attach the metric to an object.
         """
         self._subject = obj
-
-        def clean_up_fn():
-            self._subject = None
-            self.destroy()
-        obj.add_cleanup_fn(clean_up_fn)
         self.start()
 
     # ================= System Accessible Public Methods ==================
@@ -108,31 +112,6 @@ class Metric(ObjectBase):
             'Object ID',
             'Object Simulation Count'
         ]
-
-    def to_dict(self):
-        base_dict = super().to_dict()
-        base_dict.update({
-            "metric_values": self._metric_values,
-            "aggregation_window": self._aggregation_window.total_seconds(),
-            "calculations_per_save": self._calculations_per_save,
-            "calculation_cnt": self._calculation_cnt,
-            "attached_object_id": self._subject.id
-        })
-
-    def from_dict(self, object_data: dict):
-        super().from_dict(object_data)
-        self._metric_values = object_data.get("metric_values", {})
-        self._aggregation_window = timedelta(
-            seconds=object_data.get("aggregation_window", 0)
-        )
-        self._calculations_per_save = object_data.get(
-            "calculations_per_save"
-        )
-        self._calculation_cnt = object_data.get("calculation_cnt", 0)
-        subject = Orchestrator.get_instance().get_subject(
-            object_data.get("attached_object_id")
-        )
-        self.attach(subject)
 
     # ================= Private Helper Methods ==================
 
@@ -207,3 +186,27 @@ class Metric(ObjectBase):
         df.index.name = "timestamp"
         df.reset_index(inplace=True)
         df.to_csv(file_path, index=False)
+
+    def rehydrate(self):
+        """
+            Metrics are rehydrated last. It just
+            needs to be reattached to the subject.
+        """
+        orchestrator = get_orchestrator()
+        self._subject = orchestrator.get_object(
+            self._subject_type,
+            self._subject_id
+        )
+
+    # ============ Serialization Methods ============
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        if self._subject is not None:
+            state["_subject_id"] = self._subject.id
+            state["_subject_type"] = self._subject.object_type
+            state["_subject"] = None
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)

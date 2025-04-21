@@ -59,16 +59,3 @@ class PassiveEffect(EffectBase):
         return f"{self.object_subtype}_{super().__str__()}"
 
     # =================== System Accessible Public Methods ==================
-
-    def to_dict(self) -> dict:
-        base_dict = super().to_dict()
-        base_dict.update({
-            "effect_start_time": self._effect_start_time,
-            "effect_end_time": self._effect_end_time,
-        })
-        return base_dict
-
-    def from_dict(self, data: dict):
-        super().from_dict(data)
-        self._effect_start_time = data.get("effect_start_time")
-        self._effect_end_time = data.get("effect_end_time")

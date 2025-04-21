@@ -7,6 +7,10 @@
 
 from simulator_base.util.printer import printer
 from simulator_base.types.types import GenderType
+from simulator_base.state.personal_info_state import PersonalInfoState
+from market_simulation.objects.analytics.advertiser_metrics import (
+    AdvertiserMetrics
+)
 from ...config.market_config import get_config
 from ..person.advertiser import Advertiser
 from ..state.advertising_budget_state import AdvertisingBudgetState
@@ -171,6 +175,11 @@ class AdvertiserFactory:
             weights=list(all_countries.values()),
             k=1
         )[0]
+        personal_info_state = PersonalInfoState(
+            name=None,
+            birth_day=None,
+            country=adv_country,
+        )
         # min age is from a uniform distribution
         # from 18 to 30
         min_age = random.randint(
@@ -232,6 +241,7 @@ class AdvertiserFactory:
             target_roi=target_roi,
             budget_adjustment_performance_incremental=performance_incremental
         )
+        advertiser.add_object(personal_info_state)
         advertiser.add_object(intent_state)
 
     def create_advertiser(
@@ -257,6 +267,8 @@ class AdvertiserFactory:
             env_config,
             user_config
         )
+        adv_metrics = AdvertiserMetrics()
+        adv_metrics.attach(advertiser)
         return advertiser
 
     def create_advertisers(self, start: bool = True) -> List[Advertiser]:

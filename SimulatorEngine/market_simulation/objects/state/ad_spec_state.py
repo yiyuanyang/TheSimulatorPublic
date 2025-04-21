@@ -58,7 +58,7 @@ class AdSpecState(PassiveState):
 
     @property
     def gender(self) -> List[GenderType]:
-        return
+        return self._gender
 
     def country_match(self, country: str) -> bool:
         return country in self._country

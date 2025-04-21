@@ -13,40 +13,46 @@
 """
 
 
-from simulator_base.agent.agent import Agent
+from simulator_base.person.person import Person
 from ..ads.ad import Ad
 from ..types.types import AdEventType
 from datetime import datetime
 from typing import List
 
 
-class Advertiser(Agent):
+class Advertiser(Person):
     def __init__(self):
         super().__init__("Advertiser")
-        self._active_ads: List[Ad] = []
-        self._inactive_ads: List[Ad] = []
+
+    @property
+    def active_ads(self) -> List[Ad]:
+        return self.get_associated_objects('active_ads')
+
+    @property
+    def inactive_ads(self) -> List[Ad]:
+        return self.get_associated_objects('inactive_ads')
 
     @property
     def active_ad_cnt(self) -> int:
-        return len(self._active_ads)
+        return len(self.active_ads)
 
     def has_active_ad_outcome(self, event_type: AdEventType) -> bool:
         return any([
             ad.get_state('AdOutcomeState').goal == event_type
-            for ad in self._active_ads
+            for ad in self.active_ads
         ])
 
     def append_ad(self, ad: Ad):
-        self._active_ads.append(ad)
+        self.active_ads.append(ad)
 
     def remove_ad(self, ad: Ad):
-        self._active_ads.remove(ad)
+        self.active_ads.remove(ad)
 
     def append_inactive_ad(self, ad: Ad):
-        self._inactive_ads.append(ad)
+        self.inactive_ads.append(ad)
 
     def remove_inactive_ad(self, ad: Ad):
-        self._inactive_ads.remove(ad)
+        self.inactive_ads.remove(ad)
 
     @property
     def total_budget(self) -> float:
@@ -54,13 +60,13 @@ class Advertiser(Agent):
 
     @property
     def utilized_budget(self) -> float:
-        ads = self._active_ads
+        ads = self.active_ads
         return sum([
             ad.get_state('AdBudgetState').daily_budget for ad in ads
         ])
 
     def ads_after_date(self, date: datetime) -> List[Ad]:
-        all_ads = self._active_ads + self._inactive_ads
+        all_ads = self.active_ads + self.inactive_ads
         return [
             ad for ad in all_ads if ad.was_running_after_date(date)
         ]
@@ -94,8 +100,8 @@ class Advertiser(Agent):
         ]
 
     def destroy(self):
-        for ad in self._active_ads:
+        for ad in self.active_ads:
             ad.destroy()
-        for ad in self._inactive_ads:
+        for ad in self.inactive_ads:
             ad.destroy()
         super().destroy()

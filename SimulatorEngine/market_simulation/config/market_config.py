@@ -22,6 +22,7 @@
 """
 
 from simulator_base.util.printer import printer
+from simulator_base.orchestrator.orchestrator import get_orchestrator
 from simulator_base.config.global_config import get_config as get_global_config
 import yaml
 import os
@@ -33,7 +34,22 @@ class MarketConfig:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(MarketConfig, cls).__new__(cls)
+            # if objects exists in the simulation already
+            # then we should load market config from snapshot
+            if get_orchestrator().simulation_loaded():
+                file_dir = cls.get_market_config_yaml_save_path()
+                cls._instance.setup(file_dir)
         return cls._instance
+
+    @classmethod
+    def get_market_config_yaml_save_path(cls):
+        g_config = get_global_config()
+        exp_directory = g_config.get_exp_output_path()
+        yaml_path = os.path.join(
+            exp_directory,
+            'market_config.yaml'
+        )
+        return yaml_path
 
     @classmethod
     def get_instance(cls):
@@ -41,10 +57,7 @@ class MarketConfig:
             cls._instance = MarketConfig()
         return cls._instance
 
-    def setup(
-        self,
-        config_path: str = 'market_simulation/config/market_config.yaml'
-    ):
+    def setup(self, config_path: str):
         with open(config_path, 'r') as file:
             config = yaml.safe_load(file)
             self._user_config = config['user_config']
@@ -52,20 +65,15 @@ class MarketConfig:
             self._environment_config = config['environment_config']
             self._delivery_config = config['delivery_config']
             self._analytics_config = config['analytics_config']
-            g_config = get_global_config()
-            exp_output = g_config.get_exp_output_path()
-            yaml_copy_path = os.path.join(
-                exp_output,
-                'market_config.yaml'
-            )
-            os.makedirs(exp_output, exist_ok=True)
-            with open(yaml_copy_path, 'w') as yaml_copy_file:
-                yaml.dump(
-                    config,
-                    yaml_copy_file,
-                    sort_keys=False,
-                    default_flow_style=False
-                )
+            yaml_copy_path = MarketConfig.get_market_config_yaml_save_path()
+            if not os.path.exists(yaml_copy_path):
+                with open(yaml_copy_path, 'w') as yaml_copy_file:
+                    yaml.dump(
+                        config,
+                        yaml_copy_file,
+                        sort_keys=False,
+                        default_flow_style=False
+                    )
         printer("Loaded Market Config", "LOG")
 
     def get_environment_config(self) -> dict:
@@ -85,4 +93,4 @@ class MarketConfig:
 
 
 def get_config() -> MarketConfig:
-    return MarketConfig()
+    return MarketConfig.get_instance()

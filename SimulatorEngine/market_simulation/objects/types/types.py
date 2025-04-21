@@ -122,7 +122,6 @@ class ObjectSubType(StrEnum):
     ADV_ADJUST_BUDGET_ACTION = "AdvAdjustBudgetAction"
     CREATE_AD_ACTION = "CreateAdAction"
     # Action - Ad
-    PROGRESS_AD_ACTION = "ProgressAdAction"
     STOP_AD_ACTION = "StopAdAction"
     # Action - User
     BROWSE_APP_ACTION = "BrowseAppAction"
